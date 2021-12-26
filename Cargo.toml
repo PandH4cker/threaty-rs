@@ -2,7 +2,23 @@
 name = "threaty-rs"
 version = "0.1.0"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Raphael Dray"]
 
 [dependencies]
+reqwest = { version = "0.11.8", features = ["gzip", "brotli", "deflate"] }
+serde = "1.0.132"
+tokio = { version = "1.15.0", features = ["full"] }
+strum = "0.23.0"
+strum_macros = "0.23"
+base64 = "0.13.0"
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+pin-utils = "0.1.0"
+
+[dev-dependencies]
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+
+[lib]
+name = "threaty"
+path = "src/lib.rs"
