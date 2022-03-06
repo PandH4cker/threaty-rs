@@ -37,5 +37,13 @@ enum Endpoints {
     #[strum(serialize = "/v2/hosts/{ip}/tags/{id}")]
     TagHost,
     #[strum(serialize = "/v2/hosts/{ip}/tags/{id}")]
-    UntagHost
+    UntagHost,
+    #[strum(serialize = "/v1/view/certificates/{sha256}")]
+    ViewCertificate,
+    #[strum(serialize = "/v1/search/certificates")]
+    SearchCertificates,
+    #[strum(serialize = "/v1/report/certificates")]
+    GenerateCertificateReport,
+    #[strum(serialize = "/v1/bulk/certificates")]
+    BulkCertificateLookup
 }

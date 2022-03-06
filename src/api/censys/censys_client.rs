@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::net::IpAddr;
 use reqwest::{Client, Method, RequestBuilder, Url};
+use serde_json::{Map, Number, Value};
 use crate::api::api_client::APIClient;
 use crate::api::censys::BASE_URL;
 use crate::api::censys::censys_api::CensysAPI;
-use crate::api::censys::Endpoints::{AddCommentByHost, AggregateHosts, DeleteCommentByHost, GetCommentByHost, GetCommentsByHost, GetHostMetadata, GetTagsByHost, ListHostsForTag, SearchHosts, TagHost, UntagHost, UpdateCommentByHost, ViewHost, ViewHostDiff, ViewHostEvents, ViewHostNames};
+use crate::api::censys::Endpoints::{AddCommentByHost, AggregateHosts, BulkCertificateLookup, DeleteCommentByHost, GenerateCertificateReport, GetCommentByHost, GetCommentsByHost, GetHostMetadata, GetTagsByHost, ListHostsForTag, SearchCertificates, SearchHosts, TagHost, UntagHost, UpdateCommentByHost, ViewCertificate, ViewHost, ViewHostDiff, ViewHostEvents, ViewHostNames};
 use crate::api::censys::models::per_page::PerPage;
 use crate::api::censys::models::virtual_hosts::VirtualHost;
 
@@ -145,8 +146,8 @@ impl CensysAPI for CensysClient {
     }
 
     fn add_comment_by_host(self, ip: IpAddr, contents: &str) -> RequestBuilder {
-        let mut json_body = HashMap::new();
-        json_body.insert("contents", contents);
+        let mut json_body = Map::new();
+        json_body.insert("contents".to_string(), Value::String(contents.to_string()));
 
         self.client.request(Method::POST, Url::parse(
             &*format!(
@@ -171,8 +172,8 @@ impl CensysAPI for CensysClient {
     }
 
     fn update_comment_by_host(self, ip: IpAddr, comment_id: &str, contents: &str) -> RequestBuilder {
-        let mut json_body = HashMap::new();
-        json_body.insert("contents", contents);
+        let mut json_body = Map::new();
+        json_body.insert("contents".to_string(), Value::String(contents.to_string()));
 
         self.client.request(Method::PUT, Url::parse(
             &*format!(
@@ -250,5 +251,72 @@ impl CensysAPI for CensysClient {
                                   .replace("{id}", id)
             )).unwrap()
         )
+    }
+
+    fn view_certificate(self, sha256: &str) -> RequestBuilder {
+        self.client.request(Method::GET, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=ViewCertificate.to_string()
+                    .replace("{sha256}", &*sha256.to_string())
+            )).unwrap()
+        )
+    }
+
+    fn search_certificates(self,
+                           query: &str,
+                           page: i32,
+                           fields: Vec<&str>,
+                           flatten: bool) -> RequestBuilder {
+        let mut json_body = Map::new();
+        json_body.insert("query".to_string(), Value::String(query.to_string()));
+        json_body.insert("page".to_string(), Value::Number(Number::from(page)));
+        json_body.insert("fields".to_string(), Value::Array(
+            fields.iter()
+                  .map(|f| Value::String(f.to_string()))
+                  .collect::<Vec<Value>>()
+        ));
+        json_body.insert("flatten".to_string(), Value::Bool(flatten));
+
+        self.client.request(Method::POST, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=SearchCertificates.to_string()
+            )).unwrap()
+        ).json(&json_body)
+    }
+
+    fn generate_certificate_report(self, query: &str, field: &str, bucket: i32) -> RequestBuilder {
+        let mut json_body = Map::new();
+        json_body.insert("query".to_string(), Value::String(query.to_string()));
+        json_body.insert("fields".to_string(), Value::String(field.to_string()));
+        json_body.insert("bucket".to_string(), Value::Number(Number::from(bucket)));
+
+        self.client.request(Method::POST, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=GenerateCertificateReport.to_string()
+            )).unwrap()
+        ).json(&json_body)
+    }
+
+    fn bulk_certificate_lookup(self, fingerprints: Vec<&str>) -> RequestBuilder {
+        let mut json_body = Map::new();
+        json_body.insert("fingerprints".to_string(), Value::Array(
+            fingerprints.iter()
+                        .map(|f| Value::String(f.to_string()))
+                        .collect::<Vec<Value>>()
+        ));
+
+        self.client.request(Method::POST, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=BulkCertificateLookup.to_string()
+            )).unwrap()
+        ).json(&json_body)
     }
 }

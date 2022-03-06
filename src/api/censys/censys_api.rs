@@ -51,4 +51,14 @@ pub trait CensysAPI {
     fn get_tags_by_host(self, ip: IpAddr) -> RequestBuilder;
     fn tag_host(self, ip: IpAddr, id: &str) -> RequestBuilder;
     fn untag_host(self, ip: IpAddr, id: &str) -> RequestBuilder;
+    fn view_certificate(self, sha256: &str) -> RequestBuilder;
+
+    fn search_certificates(self,
+                           query: &str,
+                           page: i32,
+                           fields: Vec<&str>,
+                           flatten: bool) -> RequestBuilder;
+
+    fn generate_certificate_report(self, query: &str, field: &str, bucket: i32) -> RequestBuilder;
+    fn bulk_certificate_lookup(self, fingerprints: Vec<&str>) -> RequestBuilder;
 }
