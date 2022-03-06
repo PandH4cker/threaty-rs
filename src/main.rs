@@ -2,6 +2,7 @@
 extern crate dotenv_codegen;
 
 use std::error::Error;
+use std::net::{IpAddr, Ipv4Addr};
 use crate::api::censys::censys_client::CensysClient;
 use crate::api::censys::censys_api::CensysAPI;
 
@@ -15,13 +16,12 @@ async fn main() -> Result<(), Box<dyn Error>>{
                                       None,
                                       None);
 
-    let r = censys_client.search_hosts("service.service_name: HTTP",
-                                                   None,
-                                                   None,
-                                                   None);
-    let resp = r.send().await?.text().await?;
+    let r = censys_client.get_host_metadata();
+    let resp: serde_json::Value = serde_json::from_str(&*r.send().await?.text().await?)
+                           .expect("Unable to parse");
+    let pretty_json = serde_json::to_string_pretty(&resp);
 
-    println!("{:}", resp);
+    println!("{:}", pretty_json.unwrap());
 
     Ok(())
 }

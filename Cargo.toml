@@ -1,11 +1,11 @@
 [package]
 name = "threaty-rs"
-version = "0.1.0"
+version = "0.4.1"
 edition = "2018"
 authors = ["Raphael Dray"]
 
 [dependencies]
-reqwest = { version = "0.11.8", features = ["gzip", "brotli", "deflate"] }
+reqwest = { version = "0.11.8", features = ["gzip", "brotli", "deflate", "json"] }
 serde = "1.0.132"
 tokio = { version = "1.15.0", features = ["full"] }
 strum = "0.23.0"
@@ -13,11 +13,13 @@ strum_macros = "0.23"
 base64 = "0.13.0"
 dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"
+serde_json = "1.0.73"
 pin-utils = "0.1.0"
 
 [dev-dependencies]
 dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"
+serde_json = "1.0.73"
 
 [lib]
 name = "threaty"

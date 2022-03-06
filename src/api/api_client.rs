@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::time::Duration;
 use reqwest::{Client, header, Proxy};
-use reqwest::header::{HeaderName, HeaderValue};
+use reqwest::header::{HeaderName};
 
 pub struct APIClient {
     user_agent: String,
