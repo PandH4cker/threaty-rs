@@ -450,4 +450,36 @@ impl CensysAPI for CensysClient {
             )).unwrap()
         )
     }
+
+    fn get_series(self) -> RequestBuilder {
+        self.client.request(Method::GET, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=GetSeries.to_string()
+            )).unwrap()
+        )
+    }
+
+    fn view_series(self, series: &str) -> RequestBuilder {
+        self.client.request(Method::GET, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=ViewSeries.to_string().replace("{series}", series)
+            )).unwrap()
+        )
+    }
+
+    fn view_result(self, series: &str, result: &str) -> RequestBuilder {
+        self.client.request(Method::GET, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=ViewResult.to_string()
+                                   .replace("{series}", series)
+                                   .replace("{result}", result)
+            )).unwrap()
+        )
+    }
 }

@@ -65,5 +65,11 @@ enum Endpoints {
     #[strum(serialize = "/v2/certificates/{fingerprint}/tags/{id}")]
     TagCert,
     #[strum(serialize = "/v2/certificates/{fingerprint}/tags/{id}")]
-    UntagCert
+    UntagCert,
+    #[strum(serialize = "/v1/data")]
+    GetSeries,
+    #[strum(serialize = "/v1/data/{series}")]
+    ViewSeries,
+    #[strum(serialize = "/v1/data/{series}/{result}")]
+    ViewResult
 }

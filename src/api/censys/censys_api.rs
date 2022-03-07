@@ -76,4 +76,7 @@ pub trait CensysAPI {
     fn get_tags_by_cert(self, fingerprint: &str) -> RequestBuilder;
     fn tag_cert(self, fingerprint: &str, id: &str) -> RequestBuilder;
     fn untag_cert(self, fingerprint: &str, id: &str) -> RequestBuilder;
+    fn get_series(self) -> RequestBuilder;
+    fn view_series(self, series: &str) -> RequestBuilder;
+    fn view_result(self, series: &str, result: &str) -> RequestBuilder;
 }
