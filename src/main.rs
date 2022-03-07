@@ -2,20 +2,18 @@
 extern crate dotenv_codegen;
 
 use std::error::Error;
-use std::net::{IpAddr, Ipv4Addr};
-use crate::api::censys::censys_client::CensysClient;
-use crate::api::censys::censys_api::CensysAPI;
-
-mod api;
-mod utils;
+use threaty::threaty::Threaty;
+use threaty::api::censys::censys_api::CensysAPI;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>>{
-    let censys_client = CensysClient::new(dotenv!("CENSYS_API_KEY"),
-                                      dotenv!("CENSYS_SECRET"),
-                                      None,
-                                      None);
-
+    let _threaty = Threaty::new(
+        dotenv!("CENSYS_API_KEY"),
+        dotenv!("CENSYS_SECRET"),
+        None ,
+        None
+    );
+    let censys_client = _threaty.get_censys_client();
     let r = censys_client.search_certificates(
         "validation.nss.valid: true",
         1,

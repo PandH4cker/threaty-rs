@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub struct BoundedI32<const LOW: i32, const HIGH: i32>(i32);
 
 impl<const LOW: i32, const HIGH: i32> BoundedI32<{ LOW }, { HIGH }> {

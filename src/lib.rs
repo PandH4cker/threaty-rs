@@ -1,3 +1,4 @@
-mod api;
-mod utils;
+pub mod api;
 pub mod threaty;
+
+mod utils;
