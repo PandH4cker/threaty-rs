@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::net::IpAddr;
 use reqwest::{RequestBuilder};
 use crate::api::censys::models::{
@@ -80,4 +81,9 @@ pub trait CensysAPI {
     fn view_series(self, series: &str) -> RequestBuilder;
     fn view_result(self, series: &str, result: &str) -> RequestBuilder;
     fn account(self) -> RequestBuilder;
+    fn list_tags(self) -> RequestBuilder;
+    fn create_tag(self, name: &str, metadata: HashMap<&str, &str>) -> RequestBuilder;
+    fn get_tag(self, id: &str) -> RequestBuilder;
+    fn update_tag(self, id: &str, name: &str, metadata: HashMap<&str, &str>) -> RequestBuilder;
+    fn delete_tag(self, id: &str) -> RequestBuilder;
 }

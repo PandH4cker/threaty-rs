@@ -492,4 +492,72 @@ impl CensysAPI for CensysClient {
             )).unwrap()
         )
     }
+
+    fn list_tags(self) -> RequestBuilder {
+        self.client.request(Method::GET, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=ListTags.to_string()
+            )).unwrap()
+        )
+    }
+
+    fn create_tag(self, name: &str, metadata: HashMap<&str, &str>) -> RequestBuilder {
+        let mut json_body = Map::new();
+        json_body.insert("name".to_string(), Value::String(name.to_string()));
+        json_body.insert("metadata".to_string(), Value::Object(
+            metadata.iter()
+                    .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
+                    .collect::<Map<String, Value>>())
+        );
+
+        self.client.request(Method::POST, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=CreateTag.to_string()
+            )).unwrap()
+        )
+        .json(&json_body)
+    }
+
+    fn get_tag(self, id: &str) -> RequestBuilder {
+        self.client.request(Method::GET, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=GetTag.to_string().replace("{id}", id)
+            )).unwrap()
+        )
+    }
+
+    fn update_tag(self, id: &str, name: &str, metadata: HashMap<&str, &str>) -> RequestBuilder {
+        let mut json_body = Map::new();
+        json_body.insert("name".to_string(), Value::String(name.to_string()));
+        json_body.insert("metadata".to_string(), Value::Object(
+            metadata.iter()
+                .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
+                .collect::<Map<String, Value>>())
+        );
+
+        self.client.request(Method::PUT, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=UpdateTag.to_string().replace("{id}", id)
+            )).unwrap()
+        )
+        .json(&json_body)
+    }
+
+    fn delete_tag(self, id: &str) -> RequestBuilder {
+        self.client.request(Method::DELETE, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=DeleteTag.to_string().replace("{id}", id)
+            )).unwrap()
+        )
+    }
 }
