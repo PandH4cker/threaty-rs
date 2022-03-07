@@ -45,5 +45,25 @@ enum Endpoints {
     #[strum(serialize = "/v1/report/certificates")]
     GenerateCertificateReport,
     #[strum(serialize = "/v1/bulk/certificates")]
-    BulkCertificateLookup
+    BulkCertificateLookup,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/hosts")]
+    GetHostsByCert,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/comments")]
+    GetCommentsByCert,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/comments")]
+    AddCommentByCert,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/comments/{comment_id}")]
+    GetCommentByCert,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/comments/{comment_id}")]
+    UpdateCommentByCert,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/comments/{comment_id}")]
+    DeleteCommentByCert,
+    #[strum(serialize = "/v2/tags/{id}/certificates")]
+    ListCertificatesForTag,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/tags")]
+    GetTagsByCert,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/tags/{id}")]
+    TagCert,
+    #[strum(serialize = "/v2/certificates/{fingerprint}/tags/{id}")]
+    UntagCert
 }

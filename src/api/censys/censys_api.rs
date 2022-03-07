@@ -61,4 +61,19 @@ pub trait CensysAPI {
 
     fn generate_certificate_report(self, query: &str, field: &str, bucket: i32) -> RequestBuilder;
     fn bulk_certificate_lookup(self, fingerprints: Vec<&str>) -> RequestBuilder;
+    fn get_hosts_by_cert(self, fingerprint: &str, cursor: Option<&str>) -> RequestBuilder;
+    fn get_comments_by_cert(self, fingerprint: &str) -> RequestBuilder;
+    fn add_comment_by_cert(self, fingerprint: &str, contents: &str) -> RequestBuilder;
+    fn get_comment_by_cert(self, fingerprint: &str, comment_id: &str) -> RequestBuilder;
+
+    fn update_comment_by_cert(self,
+                              fingerprint: &str,
+                              comment_id: &str,
+                              contents: &str) -> RequestBuilder;
+
+    fn delete_comment_by_cert(self, fingerprint: &str, comment_id: &str) -> RequestBuilder;
+    fn list_certificates_for_tag(self, id: &str) -> RequestBuilder;
+    fn get_tags_by_cert(self, fingerprint: &str) -> RequestBuilder;
+    fn tag_cert(self, fingerprint: &str, id: &str) -> RequestBuilder;
+    fn untag_cert(self, fingerprint: &str, id: &str) -> RequestBuilder;
 }
