@@ -482,4 +482,14 @@ impl CensysAPI for CensysClient {
             )).unwrap()
         )
     }
+
+    fn account(self) -> RequestBuilder {
+        self.client.request(Method::GET, Url::parse(
+            &*format!(
+                "{base}{endpoint}",
+                base=BASE_URL,
+                endpoint=Account.to_string()
+            )).unwrap()
+        )
+    }
 }

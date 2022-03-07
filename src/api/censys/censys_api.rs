@@ -79,4 +79,5 @@ pub trait CensysAPI {
     fn get_series(self) -> RequestBuilder;
     fn view_series(self, series: &str) -> RequestBuilder;
     fn view_result(self, series: &str, result: &str) -> RequestBuilder;
+    fn account(self) -> RequestBuilder;
 }

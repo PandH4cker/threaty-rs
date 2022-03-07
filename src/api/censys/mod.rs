@@ -71,5 +71,7 @@ enum Endpoints {
     #[strum(serialize = "/v1/data/{series}")]
     ViewSeries,
     #[strum(serialize = "/v1/data/{series}/{result}")]
-    ViewResult
+    ViewResult,
+    #[strum(serialize = "/v1/account")]
+    Account
 }
