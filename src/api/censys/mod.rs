@@ -1,6 +1,6 @@
 pub mod censys_api;
-pub mod models;
 pub mod censys_client;
+pub mod models;
 
 const BASE_URL: &str = "https://search.censys.io/api";
 
@@ -83,5 +83,5 @@ enum Endpoints {
     #[strum(serialize = "/v2/tags/{id}")]
     UpdateTag,
     #[strum(serialize = "/v2/tags/{id}")]
-    DeleteTag
+    DeleteTag,
 }

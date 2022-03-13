@@ -1,16 +1,18 @@
 use crate::api::censys::censys_client::CensysClient;
 
 pub struct Threaty {
-    censys_client: CensysClient
+    censys_client: CensysClient,
 }
 
 impl Threaty {
-    pub fn new(censys_api_key: &str,
-               censys_secret: &str,
-               user_agent: Option<String>,
-               proxy: Option<String>) -> Threaty {
+    pub fn new(
+        censys_api_key: &str,
+        censys_secret: &str,
+        user_agent: Option<String>,
+        proxy: Option<String>,
+    ) -> Threaty {
         Threaty {
-            censys_client:  CensysClient::new(censys_api_key, censys_secret, user_agent, proxy),
+            censys_client: CensysClient::new(censys_api_key, censys_secret, user_agent, proxy),
         }
     }
 

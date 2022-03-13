@@ -1,121 +1,152 @@
-use std::collections::HashMap;
-use std::net::IpAddr;
-use reqwest::{Client, Method, RequestBuilder, Url};
-use serde_json::{Map, Number, Value};
 use crate::api::api_client::APIClient;
-use crate::api::censys::BASE_URL;
 use crate::api::censys::censys_api::CensysAPI;
-use crate::api::censys::Endpoints::*;
 use crate::api::censys::models::per_page::PerPage;
 use crate::api::censys::models::virtual_hosts::VirtualHost;
+use crate::api::censys::Endpoints::*;
+use crate::api::censys::BASE_URL;
+use reqwest::{Client, Method, RequestBuilder, Url};
+use serde_json::{Map, Number, Value};
+use std::collections::HashMap;
+use std::net::IpAddr;
 
 pub struct CensysClient {
-    client: Client
+    client: Client,
 }
 
 impl CensysClient {
-    pub fn new(censys_api_key: &str,
-               censys_secret: &str,
-               user_agent: Option<String>,
-               proxy: Option<String>) -> CensysClient {
+    pub fn new(
+        censys_api_key: &str,
+        censys_secret: &str,
+        user_agent: Option<String>,
+        proxy: Option<String>,
+    ) -> CensysClient {
         let basic_auth = [
             "Basic",
-            base64::encode(format!("{}:{}", censys_api_key, censys_secret)).as_str()
-        ].join(" ");
+            base64::encode(format!("{}:{}", censys_api_key, censys_secret)).as_str(),
+        ]
+        .join(" ");
 
         let mut headers = HashMap::new();
         headers.insert(reqwest::header::AUTHORIZATION, basic_auth.to_string());
 
         CensysClient {
-            client: APIClient::get_client(APIClient::new(
-                user_agent,
-                Option::from(headers),
-                proxy
-            ))
+            client: APIClient::get_client(APIClient::new(user_agent, Option::from(headers), proxy)),
         }
     }
 }
 
 impl CensysAPI for CensysClient {
-    fn search_hosts(self, query: Option<&str>, per_page: Option<PerPage<0, 100>>,
-                    virtual_hosts: Option<VirtualHost>, cursor: Option<&str>) -> RequestBuilder {
+    fn search_hosts(
+        self,
+        query: Option<&str>,
+        per_page: Option<PerPage<0, 100>>,
+        virtual_hosts: Option<VirtualHost>,
+        cursor: Option<&str>,
+    ) -> RequestBuilder {
         self.client
-            .request(Method::GET, Url::parse(
-                &*format!(
+            .request(
+                Method::GET,
+                Url::parse(&*format!(
                     "{base}{endpoint}",
-                    base=BASE_URL,
-                    endpoint=SearchHosts.to_string()
-                )).unwrap()
+                    base = BASE_URL,
+                    endpoint = SearchHosts.to_string()
+                ))
+                .unwrap(),
             )
             .query(&[("q", query.unwrap_or_default())])
             .query(&[("per_page", &*per_page.unwrap_or_default().to_string())])
-            .query(&[("virtual_host", &*virtual_hosts.unwrap_or_default().to_string())])
+            .query(&[(
+                "virtual_host",
+                &*virtual_hosts.unwrap_or_default().to_string(),
+            )])
             .query(&[("cursor", cursor.unwrap_or_default())])
     }
 
-    fn aggregate_hosts(self, query: Option<&str>, field: &str, num_buckets: Option<i32>,
-                       virtual_hosts: Option<VirtualHost>) -> RequestBuilder {
+    fn aggregate_hosts(
+        self,
+        query: Option<&str>,
+        field: &str,
+        num_buckets: Option<i32>,
+        virtual_hosts: Option<VirtualHost>,
+    ) -> RequestBuilder {
         self.client
-            .request(Method::GET, Url::parse(
-                &*format!(
+            .request(
+                Method::GET,
+                Url::parse(&*format!(
                     "{base}{endpoint}",
-                    base=BASE_URL,
-                    endpoint=AggregateHosts.to_string()
-                )).unwrap()
+                    base = BASE_URL,
+                    endpoint = AggregateHosts.to_string()
+                ))
+                .unwrap(),
             )
             .query(&[("q", query.unwrap_or_default())])
             .query(&[("field", field)])
             .query(&[("num_buckets", num_buckets.unwrap_or(50))])
-            .query(&[("virtual_hosts", &*virtual_hosts.unwrap_or_default().to_string())])
+            .query(&[(
+                "virtual_hosts",
+                &*virtual_hosts.unwrap_or_default().to_string(),
+            )])
     }
 
     fn view_host(self, ip: IpAddr, at_time: Option<&str>) -> RequestBuilder {
         self.client
-            .request(Method::GET, Url::parse(
-                &*format!(
+            .request(
+                Method::GET,
+                Url::parse(&*format!(
                     "{base}{endpoint}",
-                    base=BASE_URL,
-                    endpoint=ViewHost.to_string().replace("{ip}", &*ip.to_string()),
-                )).unwrap()
+                    base = BASE_URL,
+                    endpoint = ViewHost.to_string().replace("{ip}", &*ip.to_string()),
+                ))
+                .unwrap(),
             )
             .query(&[("at_time", at_time.unwrap_or_default())])
     }
 
-    fn view_host_diff(self,
-                      ip: IpAddr,
-                      ip_b: Option<IpAddr>,
-                      at_time: Option<&str>,
-                      at_time_b: Option<&str>) -> RequestBuilder {
-        let req = self.client
-            .request(Method::GET, Url::parse(
-                &*format!(
+    fn view_host_diff(
+        self,
+        ip: IpAddr,
+        ip_b: Option<IpAddr>,
+        at_time: Option<&str>,
+        at_time_b: Option<&str>,
+    ) -> RequestBuilder {
+        let req = self
+            .client
+            .request(
+                Method::GET,
+                Url::parse(&*format!(
                     "{base}{endpoint}",
-                    base=BASE_URL,
-                    endpoint=ViewHostDiff.to_string().replace("{ip}", &*ip.to_string()),
-                )).unwrap()
+                    base = BASE_URL,
+                    endpoint = ViewHostDiff.to_string().replace("{ip}", &*ip.to_string()),
+                ))
+                .unwrap(),
             )
             .query(&[("at_time", at_time.unwrap_or_default())])
             .query(&[("at_time_b", at_time_b.unwrap_or_default())]);
 
         if let Some(unwrapped) = ip_b {
             return req.query(&[("ip_b", unwrapped)]);
-        } req
+        }
+        req
     }
 
-    fn view_host_events(self,
-                        ip: IpAddr,
-                        start_time: Option<&str>,
-                        end_time: Option<&str>,
-                        per_page: Option<PerPage<1, 50>>,
-                        cursor: Option<&str>,
-                        reversed: Option<bool>) -> RequestBuilder {
+    fn view_host_events(
+        self,
+        ip: IpAddr,
+        start_time: Option<&str>,
+        end_time: Option<&str>,
+        per_page: Option<PerPage<1, 50>>,
+        cursor: Option<&str>,
+        reversed: Option<bool>,
+    ) -> RequestBuilder {
         self.client
-            .request(Method::GET, Url::parse(
-                &*format!(
+            .request(
+                Method::GET,
+                Url::parse(&*format!(
                     "{base}{endpoint}",
-                    base=BASE_URL,
-                    endpoint=ViewHostEvents.to_string().replace("{ip}", &*ip.to_string())
-                )).unwrap()
+                    base = BASE_URL,
+                    endpoint = ViewHostEvents.to_string().replace("{ip}", &*ip.to_string())
+                ))
+                .unwrap(),
             )
             .query(&[("start_time", start_time.unwrap_or_default())])
             .query(&[("end_time", end_time.unwrap_or_default())])
@@ -124,30 +155,37 @@ impl CensysAPI for CensysClient {
             .query(&[("reversed", reversed.unwrap_or_default())])
     }
 
-    fn view_host_names(self,
-                       ip: IpAddr,
-                       per_page: Option<PerPage<1, 1000>>,
-                       cursor: Option<&str>) -> RequestBuilder {
+    fn view_host_names(
+        self,
+        ip: IpAddr,
+        per_page: Option<PerPage<1, 1000>>,
+        cursor: Option<&str>,
+    ) -> RequestBuilder {
         self.client
-            .request(Method::GET, Url::parse(
-                &*format!(
+            .request(
+                Method::GET,
+                Url::parse(&*format!(
                     "{base}{endpoint}",
-                    base=BASE_URL,
-                    endpoint=ViewHostNames.to_string().replace("{ip}", &*ip.to_string())
-
-                )).unwrap()
+                    base = BASE_URL,
+                    endpoint = ViewHostNames.to_string().replace("{ip}", &*ip.to_string())
+                ))
+                .unwrap(),
             )
             .query(&[("per_page", &*per_page.unwrap_or_default().to_string())])
             .query(&[("cursor", cursor.unwrap_or_default())])
     }
 
     fn get_comments_by_host(self, ip: IpAddr) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetCommentsByHost.to_string().replace("{ip}", &*ip.to_string())
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetCommentsByHost
+                    .to_string()
+                    .replace("{ip}", &*ip.to_string())
+            ))
+            .unwrap(),
         )
     }
 
@@ -155,144 +193,190 @@ impl CensysAPI for CensysClient {
         let mut json_body = Map::new();
         json_body.insert("contents".to_string(), Value::String(contents.to_string()));
 
-        self.client.request(Method::POST, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=AddCommentByHost.to_string().replace("{ip}", &*ip.to_string())
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::POST,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = AddCommentByHost
+                        .to_string()
+                        .replace("{ip}", &*ip.to_string())
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn get_comment_by_host(self, ip: IpAddr, comment_id: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetCommentByHost.to_string()
-                                         .replace("{ip}", &*ip.to_string())
-                                         .replace("{comment_id}", &*comment_id.to_string())
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetCommentByHost
+                    .to_string()
+                    .replace("{ip}", &*ip.to_string())
+                    .replace("{comment_id}", &*comment_id.to_string())
+            ))
+            .unwrap(),
         )
     }
 
-    fn update_comment_by_host(self, ip: IpAddr, comment_id: &str, contents: &str) -> RequestBuilder {
+    fn update_comment_by_host(
+        self,
+        ip: IpAddr,
+        comment_id: &str,
+        contents: &str,
+    ) -> RequestBuilder {
         let mut json_body = Map::new();
         json_body.insert("contents".to_string(), Value::String(contents.to_string()));
 
-        self.client.request(Method::PUT, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=UpdateCommentByHost.to_string()
-                    .replace("{ip}", &*ip.to_string())
-                    .replace("{comment_id}", &*comment_id.to_string())
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::PUT,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = UpdateCommentByHost
+                        .to_string()
+                        .replace("{ip}", &*ip.to_string())
+                        .replace("{comment_id}", &*comment_id.to_string())
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn delete_comment_by_host(self, ip: IpAddr, comment_id: &str) -> RequestBuilder {
-        self.client.request(Method::DELETE, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::DELETE,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=DeleteCommentByHost.to_string()
+                base = BASE_URL,
+                endpoint = DeleteCommentByHost
+                    .to_string()
                     .replace("{ip}", &*ip.to_string())
                     .replace("{comment_id}", &*comment_id.to_string())
-            )).unwrap()
+            ))
+            .unwrap(),
         )
     }
 
     fn get_host_metadata(self) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetHostMetadata.to_string()
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetHostMetadata.to_string()
+            ))
+            .unwrap(),
         )
     }
 
     fn list_hosts_for_tag(self, id: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=ListHostsForTag.to_string().replace("{id}", &*id.to_string())
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = ListHostsForTag
+                    .to_string()
+                    .replace("{id}", &*id.to_string())
+            ))
+            .unwrap(),
         )
     }
 
     fn get_tags_by_host(self, ip: IpAddr) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetTagsByHost.to_string().replace("{ip}", &*ip.to_string())
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetTagsByHost.to_string().replace("{ip}", &*ip.to_string())
+            ))
+            .unwrap(),
         )
     }
 
     fn tag_host(self, ip: IpAddr, id: &str) -> RequestBuilder {
-        self.client.request(Method::PUT, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::PUT,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=TagHost.to_string()
-                                .replace("{ip}", &*ip.to_string())
-                                .replace("{id}", id)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = TagHost
+                    .to_string()
+                    .replace("{ip}", &*ip.to_string())
+                    .replace("{id}", id)
+            ))
+            .unwrap(),
         )
     }
 
     fn untag_host(self, ip: IpAddr, id: &str) -> RequestBuilder {
-        self.client.request(Method::DELETE, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::DELETE,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=UntagHost.to_string()
-                                  .replace("{ip}", &*ip.to_string())
-                                  .replace("{id}", id)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = UntagHost
+                    .to_string()
+                    .replace("{ip}", &*ip.to_string())
+                    .replace("{id}", id)
+            ))
+            .unwrap(),
         )
     }
 
     fn view_certificate(self, sha256: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=ViewCertificate.to_string()
+                base = BASE_URL,
+                endpoint = ViewCertificate
+                    .to_string()
                     .replace("{sha256}", &*sha256.to_string())
-            )).unwrap()
+            ))
+            .unwrap(),
         )
     }
 
-    fn search_certificates(self,
-                           query: &str,
-                           page: i32,
-                           fields: Vec<&str>,
-                           flatten: bool) -> RequestBuilder {
+    fn search_certificates(
+        self,
+        query: &str,
+        page: i32,
+        fields: Vec<&str>,
+        flatten: bool,
+    ) -> RequestBuilder {
         let mut json_body = Map::new();
         json_body.insert("query".to_string(), Value::String(query.to_string()));
         json_body.insert("page".to_string(), Value::Number(Number::from(page)));
-        json_body.insert("fields".to_string(), Value::Array(
-            fields.iter()
-                  .map(|f| Value::String(f.to_string()))
-                  .collect::<Vec<Value>>()
-        ));
+        json_body.insert(
+            "fields".to_string(),
+            Value::Array(
+                fields
+                    .iter()
+                    .map(|f| Value::String(f.to_string()))
+                    .collect::<Vec<Value>>(),
+            ),
+        );
         json_body.insert("flatten".to_string(), Value::Bool(flatten));
 
-        self.client.request(Method::POST, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=SearchCertificates.to_string()
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::POST,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = SearchCertificates.to_string()
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn generate_certificate_report(self, query: &str, field: &str, bucket: i32) -> RequestBuilder {
@@ -301,52 +385,71 @@ impl CensysAPI for CensysClient {
         json_body.insert("fields".to_string(), Value::String(field.to_string()));
         json_body.insert("bucket".to_string(), Value::Number(Number::from(bucket)));
 
-        self.client.request(Method::POST, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GenerateCertificateReport.to_string()
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::POST,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = GenerateCertificateReport.to_string()
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn bulk_certificate_lookup(self, fingerprints: Vec<&str>) -> RequestBuilder {
         let mut json_body = Map::new();
-        json_body.insert("fingerprints".to_string(), Value::Array(
-            fingerprints.iter()
-                        .map(|f| Value::String(f.to_string()))
-                        .collect::<Vec<Value>>()
-        ));
+        json_body.insert(
+            "fingerprints".to_string(),
+            Value::Array(
+                fingerprints
+                    .iter()
+                    .map(|f| Value::String(f.to_string()))
+                    .collect::<Vec<Value>>(),
+            ),
+        );
 
-        self.client.request(Method::POST, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=BulkCertificateLookup.to_string()
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::POST,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = BulkCertificateLookup.to_string()
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn get_hosts_by_cert(self, fingerprint: &str, cursor: Option<&str>) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetHostsByCert.to_string().replace("{fingerprint}", fingerprint)
-            )).unwrap()
-        )
-        .query(&[("cursor", cursor.unwrap_or_default())])
+        self.client
+            .request(
+                Method::GET,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = GetHostsByCert
+                        .to_string()
+                        .replace("{fingerprint}", fingerprint)
+                ))
+                .unwrap(),
+            )
+            .query(&[("cursor", cursor.unwrap_or_default())])
     }
 
     fn get_comments_by_cert(self, fingerprint: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetCommentsByCert.to_string().replace("{fingerprint}", fingerprint)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetCommentsByCert
+                    .to_string()
+                    .replace("{fingerprint}", fingerprint)
+            ))
+            .unwrap(),
         )
     }
 
@@ -354,210 +457,268 @@ impl CensysAPI for CensysClient {
         let mut json_body = Map::new();
         json_body.insert("contents".to_string(), Value::String(contents.to_string()));
 
-        self.client.request(Method::POST, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=AddCommentByCert.to_string().replace("{fingerprint}", fingerprint)
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::POST,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = AddCommentByCert
+                        .to_string()
+                        .replace("{fingerprint}", fingerprint)
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn get_comment_by_cert(self, fingerprint: &str, comment_id: &str) -> RequestBuilder {
-        self.client.request(Method::POST, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::POST,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetCommentByCert.to_string()
-                                         .replace("{fingerprint}", fingerprint)
-                                         .replace("{comment_id}", comment_id)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetCommentByCert
+                    .to_string()
+                    .replace("{fingerprint}", fingerprint)
+                    .replace("{comment_id}", comment_id)
+            ))
+            .unwrap(),
         )
     }
 
-    fn update_comment_by_cert(self,
-                              fingerprint: &str,
-                              comment_id: &str,
-                              contents: &str) -> RequestBuilder {
+    fn update_comment_by_cert(
+        self,
+        fingerprint: &str,
+        comment_id: &str,
+        contents: &str,
+    ) -> RequestBuilder {
         let mut json_body = Map::new();
         json_body.insert("contents".to_string(), Value::String(contents.to_string()));
 
-        self.client.request(Method::PUT, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=UpdateCommentByCert.to_string()
-                    .replace("{fingerprint}", fingerprint)
-                    .replace("{comment_id}", comment_id)
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::PUT,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = UpdateCommentByCert
+                        .to_string()
+                        .replace("{fingerprint}", fingerprint)
+                        .replace("{comment_id}", comment_id)
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn delete_comment_by_cert(self, fingerprint: &str, comment_id: &str) -> RequestBuilder {
-        self.client.request(Method::DELETE, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::DELETE,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=DeleteCommentByCert.to_string()
+                base = BASE_URL,
+                endpoint = DeleteCommentByCert
+                    .to_string()
                     .replace("{fingerprint}", fingerprint)
                     .replace("{comment_id}", comment_id)
-            )).unwrap()
+            ))
+            .unwrap(),
         )
     }
 
     fn list_certificates_for_tag(self, id: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=ListCertificatesForTag.to_string().replace("{id}", id)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = ListCertificatesForTag.to_string().replace("{id}", id)
+            ))
+            .unwrap(),
         )
     }
 
     fn get_tags_by_cert(self, fingerprint: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetTagsByCert.to_string().replace("{fingerprint}", fingerprint)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetTagsByCert
+                    .to_string()
+                    .replace("{fingerprint}", fingerprint)
+            ))
+            .unwrap(),
         )
     }
 
     fn tag_cert(self, fingerprint: &str, id: &str) -> RequestBuilder {
-        self.client.request(Method::PUT, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::PUT,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=TagCert.to_string()
-                                .replace("{fingerprint}", fingerprint)
-                                .replace("{id}", id)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = TagCert
+                    .to_string()
+                    .replace("{fingerprint}", fingerprint)
+                    .replace("{id}", id)
+            ))
+            .unwrap(),
         )
     }
 
     fn untag_cert(self, fingerprint: &str, id: &str) -> RequestBuilder {
-        self.client.request(Method::DELETE, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::DELETE,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=UntagCert.to_string()
+                base = BASE_URL,
+                endpoint = UntagCert
+                    .to_string()
                     .replace("{fingerprint}", fingerprint)
                     .replace("{id}", id)
-            )).unwrap()
+            ))
+            .unwrap(),
         )
     }
 
     fn get_series(self) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetSeries.to_string()
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetSeries.to_string()
+            ))
+            .unwrap(),
         )
     }
 
     fn view_series(self, series: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=ViewSeries.to_string().replace("{series}", series)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = ViewSeries.to_string().replace("{series}", series)
+            ))
+            .unwrap(),
         )
     }
 
     fn view_result(self, series: &str, result: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=ViewResult.to_string()
-                                   .replace("{series}", series)
-                                   .replace("{result}", result)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = ViewResult
+                    .to_string()
+                    .replace("{series}", series)
+                    .replace("{result}", result)
+            ))
+            .unwrap(),
         )
     }
 
     fn account(self) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=Account.to_string()
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = Account.to_string()
+            ))
+            .unwrap(),
         )
     }
 
     fn list_tags(self) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=ListTags.to_string()
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = ListTags.to_string()
+            ))
+            .unwrap(),
         )
     }
 
     fn create_tag(self, name: &str, metadata: HashMap<&str, &str>) -> RequestBuilder {
         let mut json_body = Map::new();
         json_body.insert("name".to_string(), Value::String(name.to_string()));
-        json_body.insert("metadata".to_string(), Value::Object(
-            metadata.iter()
+        json_body.insert(
+            "metadata".to_string(),
+            Value::Object(
+                metadata
+                    .iter()
                     .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
-                    .collect::<Map<String, Value>>())
+                    .collect::<Map<String, Value>>(),
+            ),
         );
 
-        self.client.request(Method::POST, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=CreateTag.to_string()
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::POST,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = CreateTag.to_string()
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn get_tag(self, id: &str) -> RequestBuilder {
-        self.client.request(Method::GET, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::GET,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=GetTag.to_string().replace("{id}", id)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = GetTag.to_string().replace("{id}", id)
+            ))
+            .unwrap(),
         )
     }
 
     fn update_tag(self, id: &str, name: &str, metadata: HashMap<&str, &str>) -> RequestBuilder {
         let mut json_body = Map::new();
         json_body.insert("name".to_string(), Value::String(name.to_string()));
-        json_body.insert("metadata".to_string(), Value::Object(
-            metadata.iter()
-                .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
-                .collect::<Map<String, Value>>())
+        json_body.insert(
+            "metadata".to_string(),
+            Value::Object(
+                metadata
+                    .iter()
+                    .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
+                    .collect::<Map<String, Value>>(),
+            ),
         );
 
-        self.client.request(Method::PUT, Url::parse(
-            &*format!(
-                "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=UpdateTag.to_string().replace("{id}", id)
-            )).unwrap()
-        )
-        .json(&json_body)
+        self.client
+            .request(
+                Method::PUT,
+                Url::parse(&*format!(
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = UpdateTag.to_string().replace("{id}", id)
+                ))
+                .unwrap(),
+            )
+            .json(&json_body)
     }
 
     fn delete_tag(self, id: &str) -> RequestBuilder {
-        self.client.request(Method::DELETE, Url::parse(
-            &*format!(
+        self.client.request(
+            Method::DELETE,
+            Url::parse(&*format!(
                 "{base}{endpoint}",
-                base=BASE_URL,
-                endpoint=DeleteTag.to_string().replace("{id}", id)
-            )).unwrap()
+                base = BASE_URL,
+                endpoint = DeleteTag.to_string().replace("{id}", id)
+            ))
+            .unwrap(),
         )
     }
 }
