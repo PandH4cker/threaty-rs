@@ -10,7 +10,6 @@ readme = "README.md"
 homepage = "" # TODO
 repository = "https://github.com/MrrRaph/threaty-rs"
 license = "Apache-2.0"
-license-file = "LICENSE"
 keywords = ["shodan-api", "censys-api", "censys", "shodan", "cti"]
 exclude = ["/ci", "/images", ".*", "main.rs"]
 
