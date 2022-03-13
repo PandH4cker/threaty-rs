@@ -40,30 +40,32 @@ jobs:
     - name: Run tests
       run: cargo test --all
 
-  no-std:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
-        target: ${{ env.NO_STD_TARGET }}
-    - name: Build
-      run: cargo build --verbose --no-default-features --target ${{ env.NO_STD_TARGET }}
+  # TODO Add Support for No-STD
+  #no-std:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v2
+  #  - uses: actions-rs/toolchain@v1
+  #    with:
+  #      profile: minimal
+  #      toolchain: stable
+  #      override: true
+  #      target: ${{ env.NO_STD_TARGET }}
+  #  - name: Build
+  #    run: cargo build --verbose --no-default-features --target ${{ env.NO_STD_TARGET }}
 
-  msrv:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: ${{ env.MSRV }}
-        override: true
-    - name: Build
-      run: cargo build --verbose
+  # TODO Add Support for MSRV
+  #msrv:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #  - uses: actions/checkout@v2
+  #  - uses: actions-rs/toolchain@v1
+  #    with:
+  #      profile: minimal
+  #      toolchain: ${{ env.MSRV }}
+  #      override: true
+  #  - name: Build
+  #    run: cargo build --verbose
 
   lint:
     runs-on: ubuntu-latest
