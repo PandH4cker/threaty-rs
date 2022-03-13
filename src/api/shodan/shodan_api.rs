@@ -3,7 +3,7 @@ use crate::api::shodan::models::dns_type::DNSType;
 use crate::api::shodan::models::order::Order;
 use crate::api::shodan::models::sort::Sort;
 use reqwest::RequestBuilder;
-use std::collections::{HashMap, LinkedList};
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::net::IpAddr;
 
@@ -23,18 +23,19 @@ pub trait ShodanAPI {
     fn into_tokens(self, query: &str) -> RequestBuilder;
     fn list_ports(self) -> RequestBuilder;
     fn list_protocols(self) -> RequestBuilder;
-    fn scan(self, ips: HashMap<IpAddr, LinkedList<(i32, &str)>>) -> RequestBuilder;
+    fn scan(self, ips: HashMap<IpAddr, Vec<(i32, &str)>>) -> RequestBuilder;
     fn scan_internet(self, port: i32, protocol: &str) -> RequestBuilder;
     fn list_scans(self) -> RequestBuilder;
     fn scan_status(self, id: &str) -> RequestBuilder;
-    fn create_alert(self, name: &str, filters: [IpAddr], expires: Option<i32>) -> RequestBuilder;
+    fn create_alert(self, name: &str, filters: Vec<IpAddr>, expires: Option<i32>)
+        -> RequestBuilder;
     fn alert_info(self, id: &str) -> RequestBuilder;
     fn delete_alert(self, id: &str) -> RequestBuilder;
-    fn edit_alert(self, filters: [IpAddr]) -> RequestBuilder;
+    fn edit_alert(self, filters: Vec<IpAddr>) -> RequestBuilder;
     fn list_alerts(self) -> RequestBuilder;
     fn list_triggers(self) -> RequestBuilder;
-    fn enable_trigger(self, id: &str, trigger: [&str]) -> RequestBuilder;
-    fn disable_trigger(self, id: &str, trigger: [&str]) -> RequestBuilder;
+    fn enable_trigger(self, id: &str, trigger: Vec<&str>) -> RequestBuilder;
+    fn disable_trigger(self, id: &str, trigger: Vec<&str>) -> RequestBuilder;
     fn add_to_whitelist(self, id: &str, trigger: &str, ip: IpAddr, port: i32) -> RequestBuilder;
     fn remove_from_whitelist(
         self,
@@ -86,8 +87,8 @@ pub trait ShodanAPI {
         page: Option<i32>,
     ) -> RequestBuilder;
 
-    fn dns_lookup(self, hostnames: [&str]) -> RequestBuilder;
-    fn reverse_dns_lookup(self, ips: [IpAddr]) -> RequestBuilder;
+    fn dns_lookup(self, hostnames: Vec<&str>) -> RequestBuilder;
+    fn reverse_dns_lookup(self, ips: Vec<IpAddr>) -> RequestBuilder;
     fn get_http_headers(self) -> RequestBuilder;
     fn whats_my_ip(self) -> RequestBuilder;
     fn api_plan_info(self) -> RequestBuilder;
