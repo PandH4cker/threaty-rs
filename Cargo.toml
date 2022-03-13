@@ -2,7 +2,17 @@
 name = "threaty-rs"
 version = "0.7.3"
 edition = "2018"
-authors = ["Raphael Dray"]
+authors = ["Raphael Dray <dray.raph@gmail.com>"]
+categories = ["api-bindings", "web-programming::http-client"]
+description = "Combine multiples CTI APIs in Rust to help performing analysis"
+documentation = "" # TODO
+readme = "README.md"
+homepage = "" # TODO
+repository = "https://github.com/MrrRaph/threaty-rs"
+license = "Apache-2.0"
+license-file = "LICENSE"
+keywords = ["shodan-api", "censys-api", "censys", "shodan", "cti"]
+exclude = ["/ci", "/images", ".*"]
 
 [dependencies]
 reqwest = { version = "0.11.8", features = ["gzip", "brotli", "deflate", "json"] }
