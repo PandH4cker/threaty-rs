@@ -1,4 +1,7 @@
 # Threaty
+
+![build](https://github.com/MrrRaph/threaty-rs/workflows/build/badge.svg)
+
 ## Author: [Raphael Dray](https://www.linkedin.com/in/raphaeldray/)
 Threaty is a [Rust](https://www.rust-lang.org/) library to perform 
 [CTI (Cyber Threat Intelligence)](https://en.wikipedia.org/wiki/Cyber_threat_intelligence) 
