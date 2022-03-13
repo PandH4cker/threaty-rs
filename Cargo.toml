@@ -12,7 +12,7 @@ repository = "https://github.com/MrrRaph/threaty-rs"
 license = "Apache-2.0"
 license-file = "LICENSE"
 keywords = ["shodan-api", "censys-api", "censys", "shodan", "cti"]
-exclude = ["/ci", "/images", ".*"]
+exclude = ["/ci", "/images", ".*", "main.rs"]
 
 [dependencies]
 reqwest = { version = "0.11.8", features = ["gzip", "brotli", "deflate", "json"] }
