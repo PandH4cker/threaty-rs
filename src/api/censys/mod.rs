@@ -8,7 +8,7 @@ const BASE_URL: &str = "https://search.censys.io/api";
 enum Endpoints {
     #[strum(serialize = "/v2/hosts/search")]
     SearchHosts,
-    #[strum(serialize = "/v2/hosts/aggregate")] // TODO
+    #[strum(serialize = "/v2/hosts/aggregate")]
     AggregateHosts,
     #[strum(serialize = "/v2/hosts/{ip}")]
     ViewHost,
