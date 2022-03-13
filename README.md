@@ -1,5 +1,7 @@
 # Threaty
 
+[![crates.io](https://img.shields.io/crates/v/threaty-rs.svg)](https://crates.io/crates/threaty-rs)
+[![docs.rs](https://docs.rs/threaty-rs/badge.svg)](https://docs.rs/threaty-rs/)
 ![build](https://github.com/MrrRaph/threaty-rs/workflows/build/badge.svg)
 
 ## Author: [Raphael Dray](https://www.linkedin.com/in/raphaeldray/)
