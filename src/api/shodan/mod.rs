@@ -1,3 +1,4 @@
+mod models;
 pub mod shodan_api;
 pub mod shodan_client;
 
@@ -94,5 +95,5 @@ enum Endpoints {
     #[strum(serialize = "/tools/myip")]
     WhatsMyIp,
     #[strum(serialize = "/api-info")]
-    APIPlanInfo
+    APIPlanInfo,
 }
