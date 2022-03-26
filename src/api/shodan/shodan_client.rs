@@ -15,11 +15,11 @@ use crate::api::shodan::Endpoints::{
     WhatsMyIp,
 };
 use crate::api::shodan::BASE_URL;
-use reqwest::{Body, Client, Method, RequestBuilder, Url};
+use reqwest::{Client, Method, RequestBuilder, Url};
 use serde_json::{Map, Number, Value};
-use std::collections::{HashMap, LinkedList};
-use std::fmt::{format, Display};
-use std::iter::FromIterator;
+use std::collections::{HashMap};
+use std::fmt::{Display};
+
 use std::net::IpAddr;
 
 pub struct ShodanClient {

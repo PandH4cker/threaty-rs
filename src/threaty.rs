@@ -28,4 +28,5 @@ impl Threaty {
     pub fn get_censys_client(self) -> CensysClient {
         self.censys_client
     }
+    pub fn get_shodan_client(self) -> ShodanClient { self.shodan_client }
 }
