@@ -3,7 +3,7 @@ use crate::api::shodan::shodan_client::ShodanClient;
 
 pub struct Threaty {
     censys_client: CensysClient,
-    shodan_client: ShodanClient
+    shodan_client: ShodanClient,
 }
 
 impl Threaty {
@@ -15,8 +15,13 @@ impl Threaty {
         proxy: Option<String>,
     ) -> Threaty {
         Threaty {
-            censys_client: CensysClient::new(censys_api_key, censys_secret, user_agent.clone(), proxy.clone()),
-            shodan_client: ShodanClient::new(shodan_api_key, user_agent, proxy)
+            censys_client: CensysClient::new(
+                censys_api_key,
+                censys_secret,
+                user_agent.clone(),
+                proxy.clone(),
+            ),
+            shodan_client: ShodanClient::new(shodan_api_key, user_agent, proxy),
         }
     }
 

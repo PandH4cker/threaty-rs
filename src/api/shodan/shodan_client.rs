@@ -4,14 +4,23 @@ use crate::api::shodan::models::dns_type::DNSType;
 use crate::api::shodan::models::order::Order;
 use crate::api::shodan::models::sort::Sort;
 use crate::api::shodan::shodan_api::ShodanAPI;
+use crate::api::shodan::Endpoints::{
+    APIPlanInfo, AccountProfile, AddAlertNotifier, AddOrgMember, AddToWhitelist, AlertInfo,
+    CountHost, CreateAlert, CreateNotifierProvider, DNSLookup, DeleteAlert, DeleteNotifierProvider,
+    DisableTrigger, DomainInfo, EditAlert, EditNotifier, EnableTrigger, GetHttpHeaders, HostInfo,
+    IntoTokens, ListAlerts, ListDatasetFiles, ListDatasets, ListFacets, ListFilters,
+    ListNotifierProviders, ListNotifiers, ListPorts, ListProtocols, ListQueries, ListScans,
+    ListTags, ListTriggers, NotifierInfo, OrgInfo, RemoveAlertNotifier, RemoveFromWhitelist,
+    RemoveOrgMember, ReverseDNSLookup, Scan, ScanInternet, ScanStatus, SearchHost, SearchQueries,
+    WhatsMyIp,
+};
+use crate::api::shodan::BASE_URL;
 use reqwest::{Body, Client, Method, RequestBuilder, Url};
+use serde_json::{Map, Number, Value};
 use std::collections::{HashMap, LinkedList};
-use std::fmt::{Display, format};
+use std::fmt::{format, Display};
 use std::iter::FromIterator;
 use std::net::IpAddr;
-use serde_json::{Map, Number, Value};
-use crate::api::shodan::BASE_URL;
-use crate::api::shodan::Endpoints::{AccountProfile, AddAlertNotifier, AddOrgMember, AddToWhitelist, AlertInfo, APIPlanInfo, CountHost, CreateAlert, CreateNotifierProvider, DeleteAlert, DeleteNotifierProvider, DisableTrigger, DNSLookup, DomainInfo, EditAlert, EditNotifier, EnableTrigger, GetHttpHeaders, HostInfo, IntoTokens, ListAlerts, ListDatasetFiles, ListDatasets, ListFacets, ListFilters, ListNotifierProviders, ListNotifiers, ListPorts, ListProtocols, ListQueries, ListScans, ListTags, ListTriggers, NotifierInfo, OrgInfo, RemoveAlertNotifier, RemoveFromWhitelist, RemoveOrgMember, ReverseDNSLookup, Scan, ScanInternet, ScanStatus, SearchHost, SearchQueries, WhatsMyIp};
 
 pub struct ShodanClient {
     client: Client,
@@ -35,13 +44,13 @@ impl ShodanAPI for ShodanClient {
     fn host_info(self, ip: IpAddr, history: Option<bool>, minify: Option<bool>) -> RequestBuilder {
         self.client
             .request(
-        Method::GET,
+                Method::GET,
                 Url::parse(&*format!(
                     "{base}{endpoint}",
-                          base = BASE_URL,
-                          endpoint = HostInfo.to_string().replace("{ip}", &*ip.to_string())
+                    base = BASE_URL,
+                    endpoint = HostInfo.to_string().replace("{ip}", &*ip.to_string())
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("history", history.unwrap_or_default())])
             .query(&[("minify", minify.unwrap_or_default())])
@@ -53,11 +62,11 @@ impl ShodanAPI for ShodanClient {
             .request(
                 Method::GET,
                 Url::parse(&*format!(
-                        "{base}{endpoint}",
-                        base = BASE_URL,
-                        endpoint = CountHost.to_string()
+                    "{base}{endpoint}",
+                    base = BASE_URL,
+                    endpoint = CountHost.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("query", query)])
             .query(&[("facets", facets.unwrap_or_default())])
@@ -79,7 +88,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = SearchHost.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("query", query)])
             .query(&[("facets", facets.unwrap_or_default())])
@@ -97,7 +106,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListFacets.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -111,7 +120,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListFilters.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -125,7 +134,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = IntoTokens.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("query", query)])
@@ -140,7 +149,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListPorts.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -154,22 +163,35 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListProtocols.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
 
     fn scan(self, ips: HashMap<IpAddr, Vec<(i32, &str)>>) -> RequestBuilder {
         let mut json_body = Map::new();
-        json_body.insert("ips".to_string(), Value::Object(ips.iter().map(
-            |(k, v)| (k.to_string(), Value::Array(
-              v.iter().map(
-                  |(port, service)| Value::Array(
-                      vec![Value::String(port.to_string()), Value::String(service.to_string())]
-                  )
-              ).collect::<Vec<Value>>()
-            ))
-        ).collect::<Map<String, Value>>()));
+        json_body.insert(
+            "ips".to_string(),
+            Value::Object(
+                ips.iter()
+                    .map(|(k, v)| {
+                        (
+                            k.to_string(),
+                            Value::Array(
+                                v.iter()
+                                    .map(|(port, service)| {
+                                        Value::Array(vec![
+                                            Value::String(port.to_string()),
+                                            Value::String(service.to_string()),
+                                        ])
+                                    })
+                                    .collect::<Vec<Value>>(),
+                            ),
+                        )
+                    })
+                    .collect::<Map<String, Value>>(),
+            ),
+        );
 
         self.client
             .request(
@@ -179,11 +201,10 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = Scan.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .json(&json_body)
-
     }
 
     fn scan_internet(self, port: i32, protocol: &str) -> RequestBuilder {
@@ -195,7 +216,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ScanInternet.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("port", port)])
@@ -211,7 +232,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListScans.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -225,7 +246,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ScanStatus.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&["id", id])
@@ -238,11 +259,15 @@ impl ShodanAPI for ShodanClient {
         expires: Option<i32>,
     ) -> RequestBuilder {
         let mut filters_map = Map::new();
-        filters_map.insert("ip".to_string(), Value::Array(
-            filters.iter().map(
-                |ip| Value::String(ip.to_string())
-            ).collect::<Vec<Value>>()
-        ));
+        filters_map.insert(
+            "ip".to_string(),
+            Value::Array(
+                filters
+                    .iter()
+                    .map(|ip| Value::String(ip.to_string()))
+                    .collect::<Vec<Value>>(),
+            ),
+        );
 
         let mut json_body = Map::new();
         json_body.insert("name".to_string(), Value::String(name.to_string()));
@@ -259,7 +284,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = CreateAlert.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .json(&json_body)
@@ -274,7 +299,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = AlertInfo.to_string().replace("{id}", id)
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -288,18 +313,22 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = DeleteAlert.to_string().replace("{id}", id)
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
 
     fn edit_alert(self, id: &str, filters: Vec<IpAddr>) -> RequestBuilder {
         let mut filters_map = Map::new();
-        filters_map.insert("ip".to_string(), Value::Array(
-            filters.iter().map(
-                |ip| Value::String(ip.to_string())
-            ).collect::<Vec<Value>>()
-        ));
+        filters_map.insert(
+            "ip".to_string(),
+            Value::Array(
+                filters
+                    .iter()
+                    .map(|ip| Value::String(ip.to_string()))
+                    .collect::<Vec<Value>>(),
+            ),
+        );
 
         let mut json_body = Map::new();
         json_body.insert("filters".to_string(), Value::Object(filters_map));
@@ -311,7 +340,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = EditAlert.to_string().replace("{id}", id)
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .json(&json_body)
@@ -326,7 +355,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListAlerts.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -340,7 +369,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListTriggers.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -352,10 +381,12 @@ impl ShodanAPI for ShodanClient {
                 Url::parse(&*format!(
                     "{base}{endpoint}",
                     base = BASE_URL,
-                    endpoint = EnableTrigger.to_string().replace("{id}", id)
-                                                        .replace("{trigger}", &*trigger.join(","))
+                    endpoint = EnableTrigger
+                        .to_string()
+                        .replace("{id}", id)
+                        .replace("{trigger}", &*trigger.join(","))
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -367,10 +398,12 @@ impl ShodanAPI for ShodanClient {
                 Url::parse(&*format!(
                     "{base}{endpoint}",
                     base = BASE_URL,
-                    endpoint = DisableTrigger.to_string().replace("{id}", id)
-                                                         .replace("{trigger}", &*trigger.join(","))
+                    endpoint = DisableTrigger
+                        .to_string()
+                        .replace("{id}", id)
+                        .replace("{trigger}", &*trigger.join(","))
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -382,15 +415,13 @@ impl ShodanAPI for ShodanClient {
                 Url::parse(&*format!(
                     "{base}{endpoint}",
                     base = BASE_URL,
-                    endpoint = AddToWhitelist.to_string().replace("{id}", id)
-                                                         .replace("{trigger}", trigger)
-                                                         .replace("{service}", &*format!(
-                                                             "{ip}:{port}",
-                                                             ip = ip,
-                                                             port = port
-                                                         ))
+                    endpoint = AddToWhitelist
+                        .to_string()
+                        .replace("{id}", id)
+                        .replace("{trigger}", trigger)
+                        .replace("{service}", &*format!("{ip}:{port}", ip = ip, port = port))
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -408,15 +439,13 @@ impl ShodanAPI for ShodanClient {
                 Url::parse(&*format!(
                     "{base}{endpoint}",
                     base = BASE_URL,
-                    endpoint = RemoveFromWhitelist.to_string().replace("{id}", id)
-                                                              .replace("{trigger}", trigger)
-                                                              .replace("{service}", &*format!(
-                                                                  "{ip}:{port}",
-                                                                  ip = ip,
-                                                                  port = port
-                                                              ))
+                    endpoint = RemoveFromWhitelist
+                        .to_string()
+                        .replace("{id}", id)
+                        .replace("{trigger}", trigger)
+                        .replace("{service}", &*format!("{ip}:{port}", ip = ip, port = port))
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -428,10 +457,12 @@ impl ShodanAPI for ShodanClient {
                 Url::parse(&*format!(
                     "{base}{endpoint}",
                     base = BASE_URL,
-                    endpoint = AddAlertNotifier.to_string().replace("{id}", id)
-                                                           .replace("{notifier_id}", notifier_id)
+                    endpoint = AddAlertNotifier
+                        .to_string()
+                        .replace("{id}", id)
+                        .replace("{notifier_id}", notifier_id)
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -443,10 +474,12 @@ impl ShodanAPI for ShodanClient {
                 Url::parse(&*format!(
                     "{base}{endpoint}",
                     base = BASE_URL,
-                    endpoint = RemoveAlertNotifier.to_string().replace("{id}", id)
-                                                              .replace("{notifier_id}", notifier_id)
+                    endpoint = RemoveAlertNotifier
+                        .to_string()
+                        .replace("{id}", id)
+                        .replace("{notifier_id}", notifier_id)
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -460,7 +493,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListNotifiers.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -474,7 +507,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListNotifierProviders.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -493,20 +526,18 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = CreateNotifierProvider.to_string()
                 ))
-                .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .body(format!(
                 "provider={provider}&description={description}&{args}",
                 provider = provider,
                 description = description,
-                args = args.iter().map(
-                    |(k, v)| format!(
-                        "{key}={value}",
-                        key = k,
-                        value = v
-                    )
-                ).collect::<Vec<String>>().join("&")
+                args = args
+                    .iter()
+                    .map(|(k, v)| format!("{key}={value}", key = k, value = v))
+                    .collect::<Vec<String>>()
+                    .join("&")
             ))
     }
 
@@ -519,7 +550,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = DeleteNotifierProvider.to_string().replace("{id}", id)
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -533,7 +564,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = NotifierInfo.to_string().replace("{id}", id)
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -551,18 +582,16 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = EditNotifier.to_string().replace("{id}", id)
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .body(format!(
                 "{args}",
-                args = args.iter().map(
-                    |(k, v)| format!(
-                        "{key}={value}",
-                        key = k,
-                        value = v
-                    )
-                ).collect::<Vec<String>>().join("&")
+                args = args
+                    .iter()
+                    .map(|(k, v)| format!("{key}={value}", key = k, value = v))
+                    .collect::<Vec<String>>()
+                    .join("&")
             ))
     }
 
@@ -580,7 +609,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListQueries.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("page", page.unwrap_or(1))])
@@ -597,7 +626,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = SearchQueries.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("query", query)])
@@ -613,7 +642,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListTags.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("size", size.unwrap_or(10))])
@@ -628,7 +657,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListDatasets.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -642,7 +671,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ListDatasetFiles.to_string().replace("{dataset}", dataset)
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -656,7 +685,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = OrgInfo.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -670,7 +699,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = AddOrgMember.to_string().replace("{user}", user)
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("notify", notify.unwrap_or_default())])
@@ -685,7 +714,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = RemoveOrgMember.to_string().replace("{user}", user)
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -699,7 +728,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = AccountProfile.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -719,7 +748,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = DomainInfo.to_string().replace("{domain}", domain)
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("history", history.unwrap_or_default())])
@@ -736,7 +765,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = DNSLookup.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
             .query(&[("hostnames", hostnames.join(","))])
@@ -751,12 +780,16 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = ReverseDNSLookup.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
-            .query(&[("ips", ips.iter().map(|ip| ip.to_string())
-                                       .collect::<Vec<String>>()
-                                       .join(","))])
+            .query(&[(
+                "ips",
+                ips.iter()
+                    .map(|ip| ip.to_string())
+                    .collect::<Vec<String>>()
+                    .join(","),
+            )])
     }
 
     fn get_http_headers(self) -> RequestBuilder {
@@ -768,7 +801,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = GetHttpHeaders.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -782,7 +815,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = WhatsMyIp.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
@@ -796,7 +829,7 @@ impl ShodanAPI for ShodanClient {
                     base = BASE_URL,
                     endpoint = APIPlanInfo.to_string()
                 ))
-                    .unwrap()
+                .unwrap(),
             )
             .query(&[("key", self.api_key)])
     }
