@@ -31,7 +31,7 @@ pub trait ShodanAPI {
         -> RequestBuilder;
     fn alert_info(self, id: &str) -> RequestBuilder;
     fn delete_alert(self, id: &str) -> RequestBuilder;
-    fn edit_alert(self, filters: Vec<IpAddr>) -> RequestBuilder;
+    fn edit_alert(self, id: &str, filters: Vec<IpAddr>) -> RequestBuilder;
     fn list_alerts(self) -> RequestBuilder;
     fn list_triggers(self) -> RequestBuilder;
     fn enable_trigger(self, id: &str, trigger: Vec<&str>) -> RequestBuilder;

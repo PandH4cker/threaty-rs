@@ -1,6 +1,6 @@
 [package]
 name = "threaty-rs"
-version = "0.8.4"
+version = "0.9.5"
 edition = "2018"
 authors = ["Raphael Dray <dray.raph@gmail.com>"]
 categories = ["api-bindings", "web-programming::http-client"]
