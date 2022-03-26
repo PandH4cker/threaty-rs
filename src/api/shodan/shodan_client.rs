@@ -17,8 +17,8 @@ use crate::api::shodan::Endpoints::{
 use crate::api::shodan::BASE_URL;
 use reqwest::{Client, Method, RequestBuilder, Url};
 use serde_json::{Map, Number, Value};
-use std::collections::{HashMap};
-use std::fmt::{Display};
+use std::collections::HashMap;
+use std::fmt::Display;
 
 use std::net::IpAddr;
 
